@@ -211,6 +211,6 @@ It showcases practical skills in data cleaning, exploratory analysis, querying, 
 ---
 
 **Author:** Sohini Chandra
-**Role:** Aspiring Data Analyst 
-**GitHub:** [Add your GitHub profile link]
+**Role:** Data Analyst 
+
 
