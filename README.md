@@ -1,215 +1,137 @@
 # Customer Behaviour Analysis
 
-## 1. Overview
+Analysis of a 3,900-customer retail dataset to understand what differentiates high-value
+customers, whether the subscription programme earns its discount, and where revenue is
+concentrated. Cleaning and feature engineering in Python, business questions answered in
+PostgreSQL, results presented in a Power BI dashboard.
 
-This project focuses on analyzing customer behaviour to identify purchasing patterns, understand customer preferences, and generate actionable business insights.
+## Dataset
 
-The project follows an end-to-end data analytics workflow, starting with data loading and Exploratory Data Analysis (EDA) in Python, followed by data cleaning, SQL-based analysis using PostgreSQL, and interactive dashboard development in Power BI.
+[Customer Shopping Trends](https://www.kaggle.com/datasets/iamsouravbanerjee/customer-shopping-trends-dataset)
+(Kaggle), included here as `customer_shopping_behavior.csv`.
 
-A detailed analytical report and presentation are also created to communicate key insights and business recommendations.
+- 3,900 rows, 18 columns
+- **One row per customer, not per transaction.** Purchase history is summarised in a
+  `previous_purchases` count, so this is a customer table rather than a transaction log.
+- **Synthetic data.** The figures below are real results from this file, but they describe a
+  generated dataset, not a real business.
+- No purchase dates, so no trend or time-series analysis is possible.
+- 37 missing values, all in `Review Rating`.
 
-**Project Objectives:**
+## Contents
 
-* Understand customer purchasing behaviour and preferences.
-* Identify trends in sales, spending, and customer activity.
-* Analyze customer segments and purchasing patterns.
-* Generate data-driven insights to support business decisions.
+| File | What it is |
+|---|---|
+| `customer.ipynb` | Loading, EDA, cleaning, feature engineering, load to PostgreSQL |
+| `customer_behavior.sql` | Ten business questions answered in PostgreSQL |
+| `Analysis_dashboard.png` | Power BI dashboard screenshot |
+| `Customer Shopping Behavior Analysis.pdf` | Written report |
+| `Customer-Shopping-Behavior-Analysis.pptx` | Stakeholder presentation |
+| `customer_shopping_behavior.csv` | Source data |
 
-## 2. Dataset
+## Tools & technologies
 
-The dataset contains customer-related information used to analyze purchasing behaviour and identify meaningful trends.
+| Tool | Purpose |
+|---|---|
+| Python | Data loading, exploration and cleaning |
+| pandas | Data manipulation, imputation and feature engineering |
+| SQLAlchemy / psycopg | Loading the cleaned table into PostgreSQL |
+| PostgreSQL | Business-question analysis (CTEs, window functions, conditional aggregation) |
+| Power BI | Interactive dashboard |
+| Jupyter Notebook | Analysis environment |
+| Gamma | Presentation |
 
-**Key data attributes may include:**
+## Project workflow
 
-* Customer ID
-* Age and demographic information
-* Gender
-* Product category
-* Purchase amount
-* Purchase frequency
-* Payment method
-* Purchase date
-* Customer ratings or satisfaction
+**1. Loading and exploration**
+Imported the CSV with pandas; checked structure, dtypes and summary statistics; identified
+the 37 missing `Review Rating` values as the only data quality gap.
 
-*Note: Update the dataset description and attributes based on the actual dataset used in the project.*
+**2. Cleaning and feature engineering**
+Imputed the missing ratings using the median of each product category rather than a global
+median. Standardised column names to snake_case. Derived `age_group` by splitting age into
+quartiles and `purchase_frequency_days` by mapping the categorical frequency labels to day
+counts. Checked `promo_code_used` against `discount_applied`, found them identical for every
+row, and dropped the duplicate column.
 
-## 3. Tools & Technologies
+**3. Load to PostgreSQL**
+Wrote the cleaned frame to a `customer` table via SQLAlchemy so the analysis could be done
+in SQL rather than in pandas.
 
-| Tool                 | Purpose                              |
-| -------------------- | ------------------------------------ |
-| Python               | Data loading, EDA, and data cleaning |
-| Pandas & NumPy       | Data manipulation and preprocessing  |
-| Matplotlib & Seaborn | Data visualization                   |
-| PostgreSQL           | SQL-based data analysis              |
-| Power BI             | Interactive dashboard development    |
-| Gamma                | Presentation creation                |
-| Jupyter Notebook     | Python analysis environment          |
+**4. SQL analysis**
+Answered ten business questions in `customer_behavior.sql`, covering revenue by gender and
+age group, discount behaviour, product ratings, shipping comparison, subscription value,
+loyalty segmentation and top products per category.
 
-## 4. Project Workflow
+**5. Dashboard and reporting**
+Built the Power BI dashboard, then wrote up the results as a report and a presentation.
 
-### Step 1: Data Loading & Exploratory Data Analysis (EDA)
+## Findings
 
-* Imported the dataset into Python using Pandas.
-* Examined the dataset structure, dimensions, and data types.
-* Analyzed summary statistics and key variables.
-* Explored customer behaviour, spending patterns, and purchase trends.
-* Identified initial patterns and potential data quality issues.
+**The subscription programme is a blanket discount that buys nothing.**
+Every subscriber has a discount applied, against 21.9% of non-subscribers. Despite that,
+subscribers spend fractionally *less* per order ($59.49 vs $59.87) and account for 26.9% of
+revenue from 27.0% of customers. The discount is being given away rather than earning
+incremental spend. Either the benefit should be re-priced, or it should be tied to a
+behaviour the business actually wants.
 
-### Step 2: Data Cleaning & Preprocessing
+**Average order value barely moves across any segment.**
+Every cut of the data — gender, subscription status, shipping type, age group, loyalty
+segment — lands between $57 and $61. There is no segment to upsell. Revenue growth in this
+dataset has to come from purchase frequency and customer count, not from basket size.
 
-* Checked for missing and duplicate values.
-* Corrected data types and inconsistent entries.
-* Handled missing values and duplicate records where required.
-* Standardized column names and categorical values.
-* Prepared a clean dataset for further analysis.
+**Revenue is concentrated in two categories.**
+Clothing contributes $104,264 (44.7%) and Accessories $74,200 (31.8%), so 76.5% of the
+$233,081 total sits in two of the four categories. Footwear is 15.5% and Outerwear 7.9%.
 
-### Step 3: SQL Analysis Using PostgreSQL
+**Half of discount users did not need the discount.**
+839 of the 1,677 customers who used a discount still spent above the $59.76 average, at a
+mean of $79.79 and $66,942 of revenue between them. That is a cohort worth testing a
+discount reduction on.
 
-* Imported the cleaned dataset into PostgreSQL.
-* Used SQL queries to analyze customer purchasing behaviour.
-* Applied filtering, aggregation, grouping, and joins where applicable.
-* Identified customer segments, spending patterns, and product preferences.
-* Extracted key metrics to support business insights.
+**Repeat buyers do subscribe more, but modestly.**
+27.6% of customers with more than five previous purchases subscribe, against 22.4% of the
+rest. The direction is right, the gap is small.
 
-### Step 4: Power BI Dashboard
+**Age is not a useful split here.**
+Revenue by age quartile ranges only from $55,763 to $62,143. Reporting an age group as
+"highest revenue" would overstate a 10% spread across quartiles of near-identical size.
 
-* Connected Power BI to the analyzed dataset.
-* Created interactive visualizations and KPI cards.
-* Designed dashboards to explore customer behaviour and purchasing trends.
-* Added filters and slicers for interactive analysis.
-* Presented key findings in a clear, business-friendly format.
-
-### Step 5: Reporting & Presentation
-
-* Prepared a detailed analytical report summarizing the methodology and findings.
-* Documented key insights and potential business recommendations.
-* Created a presentation using Gamma to communicate the project outcomes effectively.
-
-## 5. Dashboard
-
-The Power BI dashboard provides an interactive overview of customer behaviour and purchasing trends.
-
-**Key dashboard components:**
-
-* Customer demographics and segmentation
-* Total customers and purchase activity
-* Average purchase amount and spending patterns
-* Product category preferences
-* Purchase frequency and customer trends
-* Customer ratings or satisfaction, if available
-
+## Dashboard
 
 ![Customer Behaviour Dashboard](Analysis_dashboard.png)
 
-## 6. Results & Business Insights
+KPI cards for customer count, average purchase amount and average review rating, with
+revenue and order volume broken out by category and age group, a subscription split, and
+slicers for subscription status, gender, category and shipping type.
 
-The analysis aims to uncover actionable insights into customer behaviour, including:
+## Limitations
 
-* Customer segments with different purchasing patterns.
-* Product categories that attract higher customer spending.
-* Trends in purchase frequency and customer activity.
-* Relationships between customer demographics and purchasing behaviour.
-* Opportunities to improve customer engagement and retention.
+- The data is synthetic. Findings demonstrate method, not real market behaviour.
+- One row per customer means `purchase_amount` is a single observed order, not lifetime
+  value. "Revenue" throughout is the sum of those single amounts.
+- `previous_purchases` has no accompanying dates or amounts, so loyalty segments are built
+  on a bare count.
+- Segment boundaries (New / Returning / Loyal) are a judgement call, not a property of the
+  data. The thresholds used are stated in `customer_behavior.sql` and on the segmentation
+  slide; different thresholds give materially different percentages.
+- Review ratings are imputed for 37 customers, which slightly compresses variance in the
+  rating analysis.
+- All results are associations within a static snapshot. Nothing here establishes cause.
 
-## 7. How to Run
-
-### Prerequisites
-
-Install or set up the following tools:
-
-* Python 3.x
-* Jupyter Notebook
-* PostgreSQL
-* Power BI Desktop
-
-### Setup Instructions
-
-**1. Clone the repository**
+## Running it
 
 ```bash
-git clone <your-repository-url>
-cd customer-behaviour-analysis
+git clone https://github.com/Sohini-dotcom/Customer_behavior_analysis.git
+cd Customer_behavior_analysis
+pip install pandas numpy sqlalchemy "psycopg[binary]" jupyter
 ```
 
-**2. Install the required Python libraries**
-
-```bash
-pip install pandas numpy matplotlib seaborn sqlalchemy psycopg2-binary jupyter
-```
-
-**3. Load and analyze the dataset**
-
-* Open the Jupyter Notebook.
-* Update the dataset path.
-* Run the notebook cells to perform EDA and data cleaning.
-
-**4. Set up PostgreSQL**
-
-* Create a PostgreSQL database.
-* Import the cleaned dataset into the database.
-* Execute the SQL queries provided in the `sql/` folder.
-
-**5. Open the Power BI dashboard**
-
-* Open the `.pbix` file using Power BI Desktop.
-* Update the data source connection if required.
-* Refresh the data to view the dashboard.
-
-**6. Review the project deliverables**
-
-* Analytical report
-* Power BI dashboard
-* Gamma presentation
-
-## 8. Project Structure
-
-```text
-customer-behaviour-analysis/
-│
-├── data/
-│   ├── raw/
-│   └── cleaned/
-│
-├── notebooks/
-│   └── customer_behaviour_analysis.ipynb
-│
-├── sql/
-│   └── customer_analysis_queries.sql
-│
-├── dashboard/
-│   └── customer_behaviour_dashboard.pbix
-│
-├── reports/
-│   └── customer_behaviour_analysis_report.pdf
-│
-├── presentation/
-│   └── customer_behaviour_analysis.pptx
-│
-├── images/
-│   └── customer-behaviour-dashboard.png
-│
-├── requirements.txt
-└── README.md
-```
-
-## 9. Deliverables
-
-* Cleaned dataset
-* Python notebook with EDA and preprocessing
-* PostgreSQL queries for customer analysis
-* Interactive Power BI dashboard
-* Analytical report with business insights
-* Gamma-generated project presentation
-
-## 10. Conclusion
-
-This project demonstrates an end-to-end data analytics workflow by combining Python, SQL, and Power BI to transform raw customer data into meaningful business insights.
-
-It showcases practical skills in data cleaning, exploratory analysis, querying, visualization, and business reporting, with a focus on understanding customer behaviour and supporting data-driven decision-making.
+1. Create a PostgreSQL database named `customer_behavior`.
+2. Open `customer.ipynb`, update the connection string in the SQLAlchemy cell, and run all
+   cells. This cleans the data and writes the `customer` table.
+3. Run the queries in `customer_behavior.sql` against that database.
 
 ---
 
 **Author:** Sohini Chandra
-**Role:** Data Analyst 
-
-
