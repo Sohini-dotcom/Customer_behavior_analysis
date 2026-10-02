@@ -98,9 +98,8 @@ The Power BI dashboard provides an interactive overview of customer behaviour an
 * Purchase frequency and customer trends
 * Customer ratings or satisfaction, if available
 
-*Dashboard screenshots can be added here.*
 
-![Customer Behaviour Dashboard](images/customer-behaviour-dashboard.png)
+![Customer Behaviour Dashboard](Analysis_dashboard.png)
 
 ## 6. Results & Business Insights
 
